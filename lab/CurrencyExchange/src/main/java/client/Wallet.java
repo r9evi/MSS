@@ -48,6 +48,14 @@ public class Wallet {
         }
     }
 
+    public double getTotal() {
+        double total = 0;
+        for (Double balance : balances) {
+            total += balance;
+        }
+        return total;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

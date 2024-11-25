@@ -20,8 +20,19 @@ public class ClientService {
         return instance;
     }
 
+    public double calculateAllBalances() {
+        double sum = 0;
+        for (Client client : clients) {
+            sum += client.getWallet().getTotal();
+        }
+        return sum;
+    }
     public List<Client> getClients() {
         return clients;
+    }
+
+    public int getClientId(int index) {
+        return clients.get(index).getId();
     }
 
     public Client getClient(int clientId) {

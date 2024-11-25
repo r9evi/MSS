@@ -9,7 +9,6 @@ import response.Response;
 
 public class ExchangeService implements ServiceAPI {
     private static ExchangeService instance;
-
     private final ExchangeRepository repository;
     private final RequestQueue queue;
 
@@ -31,7 +30,7 @@ public class ExchangeService implements ServiceAPI {
         var orderRequest = new PlaceOrderRequest(clientId, type, base, target, amount, price);
         Request request = new Request(RequestType.PLACE_ORDER, clientId, orderRequest);
         queue.getQueue().add(request);
-        return new Response(String.format("Ожидается информация о размещени ордера. Клиент: %d ", clientId), request.getFuture());
+        return new Response(String.format("Ожидается информация о размещении ордера. Клиент: %d ", clientId), request.getFuture());
     }
 
 

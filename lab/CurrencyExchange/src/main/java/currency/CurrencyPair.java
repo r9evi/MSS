@@ -1,18 +1,33 @@
 package currency;
 
+import order.Order;
 import order.OrderBook;
+import request.Request;
 
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class CurrencyPair {
     private final Currency baseCurrency;
     private final Currency quoteCurrency;
     private final OrderBook orders;
 
+    private final Lock lock = new ReentrantLock();
+
     public CurrencyPair(Currency baseCurrency, Currency quoteCurrency, OrderBook orders) {
         this.baseCurrency = baseCurrency;
         this.quoteCurrency = quoteCurrency;
         this.orders = orders;
+    }
+
+    public void placeOrderToOrderBook(Order order, Request request) {
+        lock.lock();
+        try {
+            orders.placeOrder(order, request);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public Currency getBaseCurrency() {
@@ -30,6 +45,10 @@ public class CurrencyPair {
 
     public String getInversePair() {
         return quoteCurrency + "/" + baseCurrency;
+    }
+
+    public OrderBook getOrders() {
+        return orders;
     }
 
     @Override

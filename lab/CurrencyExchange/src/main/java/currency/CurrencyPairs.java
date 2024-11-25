@@ -1,6 +1,8 @@
 package currency;
 
+import order.Order;
 import order.OrderBook;
+import request.Request;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,12 @@ public class CurrencyPairs {
         }
     }
 
+    public void placeCurrencyPairOrder(Order order, Request request) {
+        int currencyIndex = calculateIndex(order.getBaseCurrency(), order.getQuoteCurrency());
+        CurrencyPair currency = pairs.get(currencyIndex);
+        currency.placeOrderToOrderBook(order, request);
+    }
+
     /**
      * Вычисляет уникальный индекс для пары валют.
      * Упорядочивает валюты, чтобы избежать дублирования (USD/RUB = RUB/USD).
@@ -43,6 +51,22 @@ public class CurrencyPairs {
         // Упорядочиваем валюты, чтобы избежать дублирования
         int minOrdinal = Math.min(baseOrdinal, quoteOrdinal);
         int maxOrdinal = Math.max(baseOrdinal, quoteOrdinal);
+
+        int n = Currency.values().length;
+        return minOrdinal * n + maxOrdinal;
+    }
+
+    public int calculateIndex(Currency base, Currency target) {
+        if (base == null || target == null) {
+            throw new IllegalArgumentException("Base and target currencies cannot be null");
+        }
+
+        int baseOrdinal = base.ordinal();
+        int targetOrdinal = target.ordinal();
+
+        // Упорядочиваем валюты, чтобы избежать дублирования
+        int minOrdinal = Math.min(baseOrdinal, targetOrdinal);
+        int maxOrdinal = Math.max(baseOrdinal, targetOrdinal);
 
         int n = Currency.values().length;
         return minOrdinal * n + maxOrdinal;

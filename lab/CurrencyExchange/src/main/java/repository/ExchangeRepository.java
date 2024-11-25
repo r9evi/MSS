@@ -2,6 +2,8 @@ package repository;
 
 import callback.Callback;
 import callback.Status;
+import currency.CurrencyPairs;
+import order.Order;
 import request.OrderInfoRequest;
 import request.PlaceOrderRequest;
 import request.Request;
@@ -15,11 +17,14 @@ public class ExchangeRepository {
     private static ExchangeRepository instance;
     private final RequestQueue queue;
 
+    private final CurrencyPairs currencyPairs;
+
     private final ExecutorService executor;
 
     private ExchangeRepository() {
         this.queue = RequestQueue.getInstance();
         executor = Executors.newSingleThreadExecutor();
+        currencyPairs = new CurrencyPairs();
         startQueueProcessing();
     }
 
@@ -41,6 +46,7 @@ public class ExchangeRepository {
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                    System.out.println("Interrupted");
                     denyService();
                     break;
                 }
@@ -49,7 +55,9 @@ public class ExchangeRepository {
     }
 
     public void processOrderPlacement(PlaceOrderRequest orderPlacementInfo, Request request) {
-
+        Order order = new Order(orderPlacementInfo.getClientId(), orderPlacementInfo.getBase(), orderPlacementInfo.getTarget(),
+                orderPlacementInfo.getOrderType(), orderPlacementInfo.getAmount(), orderPlacementInfo.getPrice());
+        currencyPairs.placeCurrencyPairOrder(order, request);
     }
 
     public void processOrderInfo(OrderInfoRequest orderInfo, Request request) {
