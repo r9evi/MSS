@@ -14,7 +14,7 @@ public class Exchange implements ExchangeAPI {
         service = ExchangeService.getInstance();
     }
 
-    public Exchange getInstacne() {
+    public static Exchange getInstance() {
         if (instance == null) {
             instance = new Exchange();
         }
@@ -29,6 +29,7 @@ public class Exchange implements ExchangeAPI {
 
     @Override
     public void getOrderInfo(int clientId, int orderId) {
-
+        var response = service.getOrderInfo(clientId, orderId);
+        response.getFuture().thenAccept(System.out::println);
     }
 }

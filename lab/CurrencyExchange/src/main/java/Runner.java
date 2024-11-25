@@ -1,12 +1,14 @@
+import api.ExchangeAPI;
+import api.ServiceAPI;
 import currency.Currency;
 import currency.CurrencyPair;
 import currency.CurrencyPairs;
+import implementation.Exchange;
 import order.OrderBook;
+import service.ExchangeService;
 
 public class Runner {
-    public static final void main(String[] args) {
-        CurrencyPairs pairs = new CurrencyPairs();
-        System.out.println(pairs.getAllPairs().size());
+    public static void main(String[] args) {
 
     }
 }

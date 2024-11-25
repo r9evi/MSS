@@ -24,7 +24,6 @@ public class CurrencyPair {
     }
 
 
-
     public String getPair() {
         return baseCurrency + "/" + quoteCurrency;
     }
