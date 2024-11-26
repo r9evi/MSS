@@ -9,7 +9,7 @@ public class Callback {
         this.result = result;
     }
 
-    public Status getType() {
+    public Status getStatus() {
         return status;
     }
 

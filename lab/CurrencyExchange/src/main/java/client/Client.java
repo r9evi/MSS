@@ -3,7 +3,7 @@ package client;
 public class Client {
     private static int clientsId = 0;
 
-    private final int id;
+    private int id;
     private final Wallet wallet;
 
     public Client() {
@@ -13,6 +13,10 @@ public class Client {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Wallet getWallet() {

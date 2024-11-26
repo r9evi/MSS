@@ -45,9 +45,9 @@ public class ExchangeRepository {
                         case GET_ORDER_INFO -> processOrderInfo((OrderInfoRequest) request.getRequestData(), request);
                     }
                 } catch (InterruptedException e) {
+                    denyService();
                     Thread.currentThread().interrupt();
                     System.out.println("Interrupted");
-                    denyService();
                     break;
                 }
             }
@@ -61,7 +61,8 @@ public class ExchangeRepository {
     }
 
     public void processOrderInfo(OrderInfoRequest orderInfo, Request request) {
-
+        currencyPairs.getOrderInfo(orderInfo.getClientId(), orderInfo.getClientId(),
+                orderInfo.getBase(), orderInfo.getTarget(), request);
     }
 
     public void denyService() {
@@ -75,6 +76,7 @@ public class ExchangeRepository {
     public void stopProcessingRequests() {
         if (executor != null && !executor.isShutdown()) {
             executor.shutdownNow();  // Прерываем выполнение потока
+            denyService();
         }
     }
 }

@@ -1,16 +1,21 @@
 package client;
 
+import currency.Currency;
+import order.Order;
+import order.OrderType;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import java.util.List;
 
 public class ClientService {
-    private final List<Client> clients;
+    private static List<Client> clients;
 
     private static ClientService instance;
 
     private ClientService() {
-        this.clients = new ArrayList<>();
+        clients = new ArrayList<>();
     }
 
     public static ClientService getInstance() {
@@ -45,7 +50,40 @@ public class ClientService {
         }
     }
 
-    public void addClients(Client[] clients) {
-        this.clients.addAll(Arrays.asList(clients));
+
+
+//    public static synchronized void updateClientBalance(int clientId, Currency base, Currency target, double remainingTargetAmount, double executedAmount, double price, OrderType type) {
+//        Wallet wallet = clients.get(clientId).getWallet();
+//        double bought = executedAmount - remainingTargetAmount;
+//        if (type == OrderType.BUY) {
+//            wallet.withdraw(base, bought * price);
+//            wallet.deposit(target, bought);
+//        } else if (type == OrderType.SELL) {
+//            wallet.withdraw(base, bought / price);
+//            wallet.deposit(target, bought);
+//        }
+//    }
+public static synchronized void updateClientBalance(Order order) {
+    // Получаем клиента и его кошелек
+    Wallet wallet = clients.get(order.getClientId()).getWallet();
+    // Вычисления
+    double boughtQuantity = order.getInitialQuantity() - order.getQuantity();
+    if (boughtQuantity > 0) {
+        double orderPrice = order.getPrice();
+        Currency base = order.getBaseCurrency();
+        Currency target = order.getQuoteCurrency();
+
+        if (order.getOrderType().equals(OrderType.BUY)) {
+            double totalCost = boughtQuantity * orderPrice;
+            wallet.withdraw(base, totalCost);
+            wallet.deposit(target, boughtQuantity);
+        } else {
+            double amountSold = boughtQuantity / orderPrice;
+            wallet.withdraw(base, amountSold);
+            wallet.deposit(target, boughtQuantity);
+        }
     }
+}
+
+
 }

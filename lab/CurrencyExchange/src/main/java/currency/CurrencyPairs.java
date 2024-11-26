@@ -2,6 +2,7 @@ package currency;
 
 import order.Order;
 import order.OrderBook;
+import order.OrderType;
 import request.Request;
 
 import java.util.ArrayList;
@@ -15,10 +16,6 @@ public class CurrencyPairs {
         fillWithPairs();
     }
 
-    /**
-     * Инициализация списка валютных пар.
-     * Создаёт все уникальные комбинации пар валют из перечисления Currency.
-     */
     private void fillWithPairs() {
         Currency[] currencies = Currency.values();
         for (int i = 0; i < currencies.length; i++) {
@@ -30,8 +27,12 @@ public class CurrencyPairs {
 
     public void placeCurrencyPairOrder(Order order, Request request) {
         int currencyIndex = calculateIndex(order.getBaseCurrency(), order.getQuoteCurrency());
-        CurrencyPair currency = pairs.get(currencyIndex);
-        currency.placeOrderToOrderBook(order, request);
+        pairs.get(currencyIndex).placeOrderToOrderBook(order, request);
+    }
+
+    public void getOrderInfo(int clientId, int orderId, Currency base, Currency target,  Request request) {
+        int currencyIndex = calculateIndex(base, target);
+        pairs.get(currencyIndex).getOrders().getInfo(clientId, orderId, request);
     }
 
     /**
