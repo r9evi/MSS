@@ -44,15 +44,10 @@ public class ClientService {
                 if (future != null) {
                     StringBuilder sb = new StringBuilder();
                     future.thenAccept(callback -> {
-                        //sb.append(callback.getResult()).append("\n");
-                        //System.out.println(callback.getResult());
                         if (callback.getResult() instanceof Order) {
                             sb.append("|-------ORDER INFO-------|\n")
                                     .append(callback).append("\n")
                                     .append("|------------------------|\n");
-//                            System.out.println("|-------ORDER INFO-------|");
-//                            System.out.println(callback.getStatus());
-//                            System.out.println("|------------------------|");
                             System.out.println(sb);
                             sb.setLength(0);
                             updateClientBalance((Order) callback.getResult());
@@ -70,25 +65,19 @@ public class ClientService {
 
     public static synchronized void updateClientBalance(Order order) {
         Wallet wallet = clients.get(order.getClientId()).getWallet();
-        double executedQuantity = order.getInitialQuantity() - order.getQuantity(); // Исполненная часть
+        double executedQuantity = order.getInitialQuantity() - order.getQuantity();
 
         if (executedQuantity > 0) {
             double totalCost = executedQuantity * order.getPrice();
             Currency base = order.getBaseCurrency();
             Currency quote = order.getQuoteCurrency();
 
-            // Если ордер на покупку (BUY), то покупатель платит котируемой валютой и получает базовую
             if (order.getOrderType() == OrderType.BUY) {
-                // Снимаем котируемую валюту (платеж)
                 wallet.withdraw(quote, totalCost);
-                // Добавляем базовую валюту (покупка)
                 wallet.deposit(base, executedQuantity);
             }
-            // Если ордер на продажу (SELL), то продавец продает базовую валюту и получает котируемую
             else if (order.getOrderType() == OrderType.SELL) {
-                // Снимаем базовую валюту (продажа)
                 wallet.withdraw(base, executedQuantity);
-                // Добавляем котируемую валюту (получение)
                 wallet.deposit(quote, totalCost);
             }
         }

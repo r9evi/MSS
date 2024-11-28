@@ -42,9 +42,9 @@ public class Order {
                 other.orderType,
                 other.quantity,
                 other.price);
-        copy.orderId = other.orderId; // Сохраняем идентификатор оригинала
-        copy.status = other.status; // Копируем статус
-        copy.initialQuantity = other.initialQuantity; // Копируем начальное количество
+        copy.orderId = other.orderId;
+        copy.status = other.status;
+        copy.initialQuantity = other.initialQuantity;
         return copy;
     }
 

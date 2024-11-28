@@ -1,10 +1,9 @@
 package request;
 
-import callback.Callback;
+
 import currency.Currency;
 import order.OrderType;
 
-import java.util.concurrent.CompletableFuture;
 
 public class PlaceOrderRequest {
     private final int clientId;

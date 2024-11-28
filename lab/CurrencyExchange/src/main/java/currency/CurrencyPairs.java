@@ -35,108 +35,52 @@ public class CurrencyPairs {
         pairs.get(currencyIndex).getOrders().getInfo(clientId, orderId, type, request);
     }
 
-    /**
-     * Вычисляет уникальный индекс для пары валют.
-     * Упорядочивает валюты, чтобы избежать дублирования (USD/RUB = RUB/USD).
-     * @param pair Пара валют.
-     * @return Уникальный индекс пары.
-     */
     public  int calculateIndex(CurrencyPair pair) {
         if (pair == null) {
             throw new IllegalArgumentException("CurrencyPair cannot be null");
         }
-
         int baseOrdinal = pair.getBaseCurrency().ordinal();
         int quoteOrdinal = pair.getQuoteCurrency().ordinal();
-
-        // Упорядочиваем валюты, чтобы избежать дублирования
         int minOrdinal = Math.min(baseOrdinal, quoteOrdinal);
         int maxOrdinal = Math.max(baseOrdinal, quoteOrdinal);
-
         int n = Currency.values().length;
         return minOrdinal * n + maxOrdinal;
     }
 
-//    public static int calculateIndex(Currency base, Currency target) {
-//        if (base == null || target == null) {
-//            throw new IllegalArgumentException("Base and target currencies cannot be null");
-//        }
-//
-//        int baseOrdinal = base.ordinal();
-//        int targetOrdinal = target.ordinal();
-//
-//        // Упорядочиваем валюты, чтобы избежать дублирования
-//        int minOrdinal = Math.min(baseOrdinal, targetOrdinal);
-//        int maxOrdinal = Math.max(baseOrdinal, targetOrdinal);
-//
-//        int n = Currency.values().length;
-//        return minOrdinal * n + maxOrdinal;
-//    }
     public  int calculateIndex(Currency base, Currency target) {
         if (base == null || target == null) {
             throw new IllegalArgumentException("Base and target currencies cannot be null");
         }
-
-        // Упорядочиваем валюты (минимальная - первая)
         int baseOrdinal = Math.min(base.ordinal(), target.ordinal());
         int targetOrdinal = Math.max(base.ordinal(), target.ordinal());
-
-        // Количество валют
         int n = Currency.values().length;
-
-        // Формула для вычисления индекса
         return baseOrdinal * (n - 1) - (baseOrdinal * (baseOrdinal - 1)) / 2 + (targetOrdinal - baseOrdinal - 1);
     }
 
-    /**
-     * Получает валютную пару по уникальному индексу.
-     * Используется обратный расчёт индексов, чтобы восстановить валюты.
-     * @param index Уникальный индекс пары.
-     * @return Найденная или созданная пара.
-     */
     public CurrencyPair getPairByIndex(int index) {
         int n = Currency.values().length;
         int baseIndex = index / n;
         int quoteIndex = index % n;
-
         Currency base = Currency.values()[baseIndex];
         Currency quote = Currency.values()[quoteIndex];
-
-        return new CurrencyPair(base, quote, null); // Возвращаем новую или существующую пару
+        return new CurrencyPair(base, quote, null);
     }
 
-    /**
-     * Возвращает список всех валютных пар.
-     * @return Список уникальных валютных пар.
-     */
     public List<CurrencyPair> getAllPairs() {
-        return new ArrayList<>(pairs); // Возвращаем копию списка для безопасности
+        return new ArrayList<>(pairs);
     }
 
-    /**
-     * Получает пару валют по указанным базовой и котируемой валютам.
-     * Упорядочивает базовую и котируемую валюты, чтобы избежать дублирования (USD/RUB = RUB/USD).
-     * @param base Базовая валюта.
-     * @param target Котируемая валюта.
-     * @return Найденная или созданная пара.
-     */
     public CurrencyPair getPair(Currency base, Currency target) {
         if (base == null || target == null) {
             throw new IllegalArgumentException("Base and target currencies cannot be null");
         }
-
-        // Упорядочиваем валюты
         Currency minCurrency = base.ordinal() < target.ordinal() ? base : target;
         Currency maxCurrency = base.ordinal() < target.ordinal() ? target : base;
-
-        // Ищем существующую пару
         for (CurrencyPair pair : pairs) {
             if (pair.getBaseCurrency() == minCurrency && pair.getQuoteCurrency() == maxCurrency) {
                 return pair;
             }
         }
-
-        // Если пара не найдена, создаём новую
         CurrencyPair newPair = new CurrencyPair(minCurrency, maxCurrency, null);
         pairs.add(newPair);
         return newPair;

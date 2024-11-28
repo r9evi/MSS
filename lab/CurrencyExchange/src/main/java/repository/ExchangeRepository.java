@@ -17,11 +17,10 @@ import java.util.concurrent.TimeUnit;
 
 public class ExchangeRepository {
     private final RequestQueue queue;
-
     private final CurrencyPairs currencyPairs;
-
     private final ExecutorService executor;
 
+    private volatile static boolean isRunning = true;
 
 
     private ExchangeRepository() {
@@ -41,7 +40,7 @@ public class ExchangeRepository {
 
     private void startQueueProcessing() {
         executor.submit(() -> {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (isRunning && !Thread.currentThread().isInterrupted()) {
                 try {
                     Request request = queue.getQueue().take();
                     processRequestSafely(request);
@@ -51,7 +50,6 @@ public class ExchangeRepository {
                     break;
                 }
             }
-
         });
     }
 
@@ -60,7 +58,6 @@ public class ExchangeRepository {
             case PLACE_ORDER -> processOrderPlacement((PlaceOrderRequest) request.getRequestData(), request);
             case GET_ORDER_INFO -> processOrderInfo((OrderInfoRequest) request.getRequestData(), request);
         }
-
     }
 
     public void processOrderPlacement(PlaceOrderRequest orderPlacementInfo, Request request) {
@@ -83,16 +80,10 @@ public class ExchangeRepository {
         }
     }
 
-//    public void denyRequest(Request request) {
-//        request.getFuture().complete(new Callback(Status.PARTIAL_SUCCESS, "Отказ в обслуживании"));
-//    }
-
-
     public void stopProcessingRequests() {
-        //isRunning = false;  // Останавливаем основной цикл
+        isRunning = false;
         if (executor != null && !executor.isShutdown()) {
             try {
-                // Попытка корректно завершить все задачи
                 executor.shutdownNow();
                 if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
                     System.err.println("Executor did not terminate in the specified time.");

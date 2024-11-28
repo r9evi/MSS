@@ -27,8 +27,7 @@ public class Exchange implements ExchangeAPI {
     @Override
     public void placeOrder(int clientId, OrderType type, Currency base, Currency target, double amount, double price) {
         var response = service.placeOrder(clientId, type, base, target, amount, price);
-        //System.out.println(response.getMessage());
-        //response.getFuture().thenAccept(System.out::println);
+
         StringBuilder sb = new StringBuilder();
         response.getFuture().thenAccept(callback -> {
             if (callback.getResult() instanceof Order) {
@@ -38,19 +37,14 @@ public class Exchange implements ExchangeAPI {
                             .append("|------------------------|\n");
                     System.out.println(sb);
                     sb.setLength(0);
-//                    System.out.println("|-------ORDER INFO-------|");
-//                    System.out.println(callback.getStatus());
-//                    System.out.println("|------------------------|");
                     ClientService.updateClientBalance((Order) callback.getResult());
                 }
             } else {
-//                System.out.println(callback.getStatus());
                 sb.append("|-------ORDER INFO-------|\n")
                         .append(callback).append("\n")
                         .append("|------------------------|\n");
                 System.out.println(sb);
                 sb.setLength(0);
-               //System.out.printf("%s\n%n", callback);
             }
         });
     }
@@ -58,7 +52,6 @@ public class Exchange implements ExchangeAPI {
     @Override
     public void getOrderInfo(int clientId, int orderId, Currency base, Currency target, OrderType type) {
         var response = service.getOrderInfo(clientId, orderId, base, target, type);
-        //System.out.println(response.getMessage());
         StringBuilder sb = new StringBuilder();
         response.getFuture().thenAccept(callback -> {
             if (callback.getResult() instanceof Order order) {

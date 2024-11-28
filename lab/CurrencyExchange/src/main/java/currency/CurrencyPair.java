@@ -38,7 +38,6 @@ public class CurrencyPair {
         return quoteCurrency;
     }
 
-
     public String getPair() {
         return baseCurrency + "/" + quoteCurrency;
     }
@@ -64,8 +63,4 @@ public class CurrencyPair {
         return Objects.hash(baseCurrency, quoteCurrency);
     }
 
-//    @Override
-//    public String toString() {
-//        return getPair();
-//    }
 }
