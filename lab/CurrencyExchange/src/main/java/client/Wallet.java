@@ -18,10 +18,10 @@ public class Wallet {
             System.out.println("Сумма пополнения должна быть положительной");
         }
         balances.set(getIndex(currency), getBalance(currency) + amount);
-        System.out.printf("Пополнение: %.2f %s\nНовый баланс: %.2f\n", amount, currency, getBalance(currency));
+        //System.out.printf("Пополнение: %.2f %s\nНовый баланс: %.2f\n", amount, currency, getBalance(currency));
     }
 
-    public double withdraw(Currency currency, double amount) {
+    public void withdraw(Currency currency, double amount) {
         if (amount <= 0) {
             System.out.println("Сумма снятия должна быть положительной");
         }
@@ -29,8 +29,8 @@ public class Wallet {
             System.out.printf("Недостаточно средств для снятия в валюте %s %n", currency);
         }
         balances.set(getIndex(currency), getBalance(currency) - amount);
-        System.out.printf("Снятие: %.2f %s\nНовый баланс: %.2f\n", amount, currency, getBalance(currency));
-        return amount;
+        //System.out.printf("Снятие: %.2f %s\nНовый баланс: %.2f\n", amount, currency, getBalance(currency));
+        //return amount;
     }
 
     private int getIndex(Currency currency) {

@@ -2,6 +2,7 @@ package repository;
 
 import callback.Callback;
 import callback.Status;
+import client.ClientService;
 import currency.CurrencyPairs;
 import order.Order;
 import request.OrderInfoRequest;
@@ -12,14 +13,16 @@ import request.RequestQueue;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class ExchangeRepository {
-    private static ExchangeRepository instance;
     private final RequestQueue queue;
 
     private final CurrencyPairs currencyPairs;
 
     private final ExecutorService executor;
+
+
 
     private ExchangeRepository() {
         this.queue = RequestQueue.getInstance();
@@ -28,11 +31,12 @@ public class ExchangeRepository {
         startQueueProcessing();
     }
 
+    private static final class InstanceHolder {
+        private static final ExchangeRepository instance = new ExchangeRepository();
+    }
+
     public static ExchangeRepository getInstance() {
-        if (instance == null) {
-            instance = new ExchangeRepository();
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
     private void startQueueProcessing() {
@@ -40,29 +44,36 @@ public class ExchangeRepository {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Request request = queue.getQueue().take();
-                    switch (request.getType()) {
-                        case PLACE_ORDER -> processOrderPlacement((PlaceOrderRequest) request.getRequestData(), request);
-                        case GET_ORDER_INFO -> processOrderInfo((OrderInfoRequest) request.getRequestData(), request);
-                    }
+                    processRequestSafely(request);
                 } catch (InterruptedException e) {
+                   Thread.currentThread().interrupt();
                     denyService();
-                    Thread.currentThread().interrupt();
-                    System.out.println("Interrupted");
                     break;
                 }
             }
+
         });
     }
 
+    private void processRequestSafely(Request request) {
+        switch (request.getType()) {
+            case PLACE_ORDER -> processOrderPlacement((PlaceOrderRequest) request.getRequestData(), request);
+            case GET_ORDER_INFO -> processOrderInfo((OrderInfoRequest) request.getRequestData(), request);
+        }
+
+    }
+
     public void processOrderPlacement(PlaceOrderRequest orderPlacementInfo, Request request) {
-        Order order = new Order(orderPlacementInfo.getClientId(), orderPlacementInfo.getBase(), orderPlacementInfo.getTarget(),
-                orderPlacementInfo.getOrderType(), orderPlacementInfo.getAmount(), orderPlacementInfo.getPrice());
+        int clientId = orderPlacementInfo.getClientId();
+        Order order = new Order(clientId, orderPlacementInfo.getBase(),
+                orderPlacementInfo.getTarget(), orderPlacementInfo.getOrderType(), orderPlacementInfo.getAmount(), orderPlacementInfo.getPrice());
+        ClientService.addClientEvent(clientId, order.getFuture());
         currencyPairs.placeCurrencyPairOrder(order, request);
     }
 
     public void processOrderInfo(OrderInfoRequest orderInfo, Request request) {
-        currencyPairs.getOrderInfo(orderInfo.getClientId(), orderInfo.getClientId(),
-                orderInfo.getBase(), orderInfo.getTarget(), request);
+        currencyPairs.getOrderInfo(orderInfo.getClientId(), orderInfo.getOrderId(),
+                orderInfo.getBase(), orderInfo.getTarget(), orderInfo.getType(), request);
     }
 
     public void denyService() {
@@ -72,11 +83,27 @@ public class ExchangeRepository {
         }
     }
 
+//    public void denyRequest(Request request) {
+//        request.getFuture().complete(new Callback(Status.PARTIAL_SUCCESS, "Отказ в обслуживании"));
+//    }
+
 
     public void stopProcessingRequests() {
+        //isRunning = false;  // Останавливаем основной цикл
         if (executor != null && !executor.isShutdown()) {
-            executor.shutdownNow();  // Прерываем выполнение потока
-            denyService();
+            try {
+                // Попытка корректно завершить все задачи
+                executor.shutdownNow();
+                if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+                    System.err.println("Executor did not terminate in the specified time.");
+                }
+            } catch (InterruptedException e) {
+                System.err.println("Shutdown interrupted");
+                Thread.currentThread().interrupt();
+            } finally {
+                denyService();
+                queue.clear();
+            }
         }
     }
 }

@@ -21,4 +21,8 @@ public class RequestQueue {
     public BlockingQueue<Request> getQueue() {
         return queue;
     }
+
+    public void clear() {
+        queue.clear();
+    }
 }

@@ -30,9 +30,9 @@ public class CurrencyPairs {
         pairs.get(currencyIndex).placeOrderToOrderBook(order, request);
     }
 
-    public void getOrderInfo(int clientId, int orderId, Currency base, Currency target,  Request request) {
+    public void getOrderInfo(int clientId, int orderId, Currency base, Currency target, OrderType type,  Request request) {
         int currencyIndex = calculateIndex(base, target);
-        pairs.get(currencyIndex).getOrders().getInfo(clientId, orderId, request);
+        pairs.get(currencyIndex).getOrders().getInfo(clientId, orderId, type, request);
     }
 
     /**
@@ -41,7 +41,7 @@ public class CurrencyPairs {
      * @param pair Пара валют.
      * @return Уникальный индекс пары.
      */
-    public int calculateIndex(CurrencyPair pair) {
+    public  int calculateIndex(CurrencyPair pair) {
         if (pair == null) {
             throw new IllegalArgumentException("CurrencyPair cannot be null");
         }
@@ -57,20 +57,35 @@ public class CurrencyPairs {
         return minOrdinal * n + maxOrdinal;
     }
 
-    public int calculateIndex(Currency base, Currency target) {
+//    public static int calculateIndex(Currency base, Currency target) {
+//        if (base == null || target == null) {
+//            throw new IllegalArgumentException("Base and target currencies cannot be null");
+//        }
+//
+//        int baseOrdinal = base.ordinal();
+//        int targetOrdinal = target.ordinal();
+//
+//        // Упорядочиваем валюты, чтобы избежать дублирования
+//        int minOrdinal = Math.min(baseOrdinal, targetOrdinal);
+//        int maxOrdinal = Math.max(baseOrdinal, targetOrdinal);
+//
+//        int n = Currency.values().length;
+//        return minOrdinal * n + maxOrdinal;
+//    }
+    public  int calculateIndex(Currency base, Currency target) {
         if (base == null || target == null) {
             throw new IllegalArgumentException("Base and target currencies cannot be null");
         }
 
-        int baseOrdinal = base.ordinal();
-        int targetOrdinal = target.ordinal();
+        // Упорядочиваем валюты (минимальная - первая)
+        int baseOrdinal = Math.min(base.ordinal(), target.ordinal());
+        int targetOrdinal = Math.max(base.ordinal(), target.ordinal());
 
-        // Упорядочиваем валюты, чтобы избежать дублирования
-        int minOrdinal = Math.min(baseOrdinal, targetOrdinal);
-        int maxOrdinal = Math.max(baseOrdinal, targetOrdinal);
-
+        // Количество валют
         int n = Currency.values().length;
-        return minOrdinal * n + maxOrdinal;
+
+        // Формула для вычисления индекса
+        return baseOrdinal * (n - 1) - (baseOrdinal * (baseOrdinal - 1)) / 2 + (targetOrdinal - baseOrdinal - 1);
     }
 
     /**

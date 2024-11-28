@@ -12,13 +12,15 @@ public class OrderInfoRequest {
     private final int orderId;
     private final Currency base;
     private final Currency target;
+    private final OrderType type;
 
 
-    public OrderInfoRequest(int clientId, int orderId, Currency base, Currency target) {
+    public OrderInfoRequest(int clientId, int orderId, Currency base, Currency target, OrderType type) {
         this.clientId = clientId;
         this.orderId = orderId;
         this.base = base;
         this.target = target;
+        this.type = type;
     }
 
     public int getClientId() {
@@ -37,4 +39,7 @@ public class OrderInfoRequest {
         return target;
     }
 
+    public OrderType getType() {
+        return type;
+    }
 }

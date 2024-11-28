@@ -30,13 +30,13 @@ public class ExchangeService implements ServiceAPI {
         var orderRequest = new PlaceOrderRequest(clientId, type, base, target, amount, price);
         Request request = new Request(RequestType.PLACE_ORDER, clientId, orderRequest);
         queue.getQueue().add(request);
-        return new Response(String.format("Ожидается информация о размещении ордера. Клиент: %d ", clientId), request.getFuture());
+        return new Response(String.format("Ожидается размещение ордера. Клиент: %d ", clientId), request.getFuture());
     }
 
 
     @Override
-    public Response getOrderInfo(int clientId, int orderId, Currency base, Currency target) {
-        var orderInfoRequest = new OrderInfoRequest(clientId, orderId, base, target);
+    public Response getOrderInfo(int clientId, int orderId, Currency base, Currency target, OrderType type) {
+        var orderInfoRequest = new OrderInfoRequest(clientId, orderId, base, target, type);
         Request request = new Request(RequestType.GET_ORDER_INFO, clientId, orderInfoRequest);
         queue.getQueue().add(request);
         return new Response(String.format("Ожидается информация по ордеру %d", orderId), request.getFuture());
