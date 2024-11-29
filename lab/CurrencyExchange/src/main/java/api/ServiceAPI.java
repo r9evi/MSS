@@ -6,6 +6,6 @@ import response.Response;
 
 public interface ServiceAPI {
     Response placeOrder(int clientId, OrderType type, Currency base, Currency target, double amount, double price);
-    Response getOrderInfo(int clientId, int orderId, Currency base, Currency target, OrderType type);
+   // Response getOrderInfo(int clientId, int orderId, Currency base, Currency target, OrderType type);
     void closeExchange();
 }

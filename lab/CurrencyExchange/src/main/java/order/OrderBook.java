@@ -5,8 +5,7 @@ import callback.Status;
 import request.Request;
 
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+
 
 public class OrderBook {
     private final PriorityQueue<Order> buyOrders;
@@ -17,36 +16,36 @@ public class OrderBook {
         sellOrders = new PriorityQueue<>(Comparator.comparingDouble(Order::getPrice));
     }
 
-    public void getInfo(int clientId, int orderId, OrderType type, Request request) {
-        if (type.equals(OrderType.BUY)) {
-            findOrderByInfo(clientId, orderId, buyOrders, request);
-        } else {
-            findOrderByInfo(clientId, orderId, sellOrders, request);
-        }
-    }
+//    public void getInfo(int clientId, int orderId, OrderType type, Request request) {
+//        if (type.equals(OrderType.BUY)) {
+//            findOrderByInfo(clientId, orderId, buyOrders, request);
+//        } else {
+//            findOrderByInfo(clientId, orderId, sellOrders, request);
+//        }
+//    }
 
-    public void findOrderByInfo(int clientId, int orderId, Queue<Order> orders, Request request) {
-        for (Order order : orders) {
-            if (order.getOrderId() == clientId && order.getOrderId() == orderId) {
-                request.getFuture().complete(new Callback(order.getStatus(), order));
-            } else {
-                request.getFuture().complete(new Callback(Status.FAILURE, "Ордер не найден"));
-            }
-        }
-    }
+//    public void findOrderByInfo(int clientId, int orderId, Queue<Order> orders, Request request) {
+//        for (Order order : orders) {
+//            if (order.getOrderId() == clientId && order.getOrderId() == orderId) {
+//                request.getFuture().complete(new Callback(order.getStatus(), order));
+//            } else {
+//                request.getFuture().complete(new Callback(Status.FAILURE, "Ордер не найден"));
+//            }
+//        }
+//    }
 
     public void placeOrder(Order newOrder, Request request) {
         if (newOrder.getOrderType() == OrderType.BUY) {
             if (sellOrders.isEmpty()) {
                 buyOrders.offer(newOrder);
-                request.getFuture().complete(new Callback(Status.CREATED, "Ордер размещен"));
+                request.setCallback(new Callback(Status.CREATED, "Ордер размещен"));
             } else {
                 processOrder(newOrder, request, sellOrders);
             }
         } else {
             if (buyOrders.isEmpty()) {
                 sellOrders.offer(newOrder);
-                request.getFuture().complete(new Callback(Status.CREATED, "Ордер размещен"));
+                request.setCallback(new Callback(Status.CREATED, "Ордер размещен"));
             } else {
                 processOrder(newOrder, request, buyOrders);
             }
@@ -70,7 +69,8 @@ public class OrderBook {
                 }
                 if (newOrder.getQuantity() <= 0) {
                     newOrder.setStatus(Status.FULL_SUCCESS);
-                    request.getFuture().complete(new Callback(Status.FULL_SUCCESS, newOrder));
+                    request.setCallback(new Callback(Status.FULL_SUCCESS, newOrder));
+                    request.getCallback().accept(request.getCallback());
                 } else {
                     Order oldOrderCopy = Order.copy(newOrder);
                     newOrder.setInitialQuantity(newOrder.getQuantity());
@@ -79,13 +79,15 @@ public class OrderBook {
                     } else {
                         buyOrders.add(newOrder);
                     }
-                    request.getFuture().complete(new Callback(Status.PARTIAL_SUCCESS, oldOrderCopy));
+                    request.setCallback(new Callback(Status.PARTIAL_SUCCESS, oldOrderCopy));
+                    request.getCallback().accept(request.getCallback());
                 }
                 return;
             }
         }
         newOrder.setStatus(Status.CREATED);
-        request.getFuture().complete(new Callback(Status.CREATED, "Не найдено встречных. Размещен"));
+        request.setCallback(new Callback(Status.CREATED, "Не найдено встречных. Размещен"));
+        request.getCallback().accept(request.getCallback());
     }
 
     private boolean canExecute(Order newOrder, Order existingOrder) {

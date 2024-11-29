@@ -56,9 +56,6 @@ public class Order {
         return initialQuantity;
     }
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
-    }
 
     public Currency getBaseCurrency() {
         return baseCurrency;

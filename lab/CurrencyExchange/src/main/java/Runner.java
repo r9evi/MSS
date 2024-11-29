@@ -1,19 +1,14 @@
 import api.ExchangeAPI;
-import api.ServiceAPI;
 import client.Client;
 import client.ClientService;
 import currency.Currency;
-import currency.CurrencyPair;
-import currency.CurrencyPairs;
 import implementation.Exchange;
-import order.OrderBook;
 import order.OrderType;
-import service.ExchangeService;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
+
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+
 
 public class Runner {
     public static final String MSG_FORMAT = "|-------------------|\n%s %.2f\n|-------------------|\n";
@@ -37,16 +32,9 @@ public class Runner {
                 ------------------""");
         System.out.println(sb);
         sb.setLength(0);
-
+        long startTime = System.nanoTime();
         Executor executor = Executors.newFixedThreadPool(50);
         executor.execute(() -> mss.placeOrder(client1.getId(), OrderType.SELL, Currency.USD, Currency.RUB, 500, 2));
-        try {
-            Thread.sleep(100);
-            executor.execute(() -> mss.getOrderInfo(client1.getId(), client1.getId(), Currency.USD, Currency.RUB, OrderType.SELL));
-
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         for (int i = 0; i < 1001; i ++) {
             if (i < 500) {
                 executor.execute(() -> mss.placeOrder(client1.getId(), OrderType.SELL, Currency.USD, Currency.RUB, 500, 2));
@@ -55,8 +43,11 @@ public class Runner {
             }
         }
         Thread.sleep(100);
+        long endTime = System.nanoTime(); // Время окончания
+        System.out.println("Время выполнения: " + (endTime - startTime) / 100_000 + " наносекунд");
         ClientService.updateClientsBalances();
         double after = ClientService.calculateAllBalances();
+
         sb.append(String.format(MSG_FORMAT, "After operation:", after));
         System.out.println(sb);
         sb.setLength(0);
